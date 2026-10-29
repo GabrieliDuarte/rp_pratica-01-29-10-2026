@@ -1,45 +1,24 @@
-/npm init -y
-npm i express pg dotenv
-npm i -D typescript tsx @types/node @types/express @types/pg
-npx tsc --init
+import { Router } from "express";
+import { clientesService } from "../services/clientes.service.js";
 
+export const clientesRouter = Router();
 
- "dev": "tsx watch src/server.ts",
+clientesRouter.get("/", async (req, res) => {
+  try { res.status(200).json(await clientesService.getAll()); } catch { res.status(500).json({ message: "Erro" }); }
+});
 
-export interface CriarFuncionario {
-  nome: string;
-  email: string;
-  telefone: number;
-  cargo: string;
-  dt_admissao: string;
-}
+clientesRouter.get("/:id", async (req, res) => {
+  try { const cliente = await clientesService.getById(req.params.id); cliente ? res.status(200).json(c) : res.status(404).json({ msg: "404" }); } catch { res.status(500).json({ message: "Erro" }); }
+});
 
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+clientesRouter.post("/", async (req, res) => {
+  try { res.status(201).json(await clientesService.create(req.body)); } catch { res.status(500).json({ message: "Erro" }); }
+});
 
-CREATE TABLE funcionarios(
+clientesRouter.patch("/:id", async (req, res) => {
+  try { const cliente = await clientesService.update(req.params.id, req.body); cliente ? res.status(200).json(cliente) : res.status(404).json({ message: "404" }); } catch { res.status(500).json({ message: "Erro" }); }
+});
 
-id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-nome VARCHAR(50) NOT NULL,
-email VARCHAR(100) NOT NULL,
-telefone NUMERIC NOT NULL,
-cargo VARCHAR(40) NOT NULL,
-dt_admissao DATE NOT NULL
-)
-
-import express from 'express';
-import { funcionariosRouter } from './routes/funcionarios.routes.js';
-
-const app = express();
-
-app.use(express.json());
-app.use('/funcionarios', funcionariosRouter);
-
-app.listen(3000, () => console.log("Rodando na porta 3000"));
-
-
-import 'dotenv/config'
-import pg from 'pg'
-
-const { Pool } = pg
-
-export const pool = new Pool()
+clientesRouter.delete("/:id", async (req, res) => {
+  try { await clientesService.delete(req.params.id) ? res.status(200).json({ message: "OK" }) : res.status(404).json({ message: "404" }); } catch { res.status(500).json({ message: "Erro" }); }
+});
